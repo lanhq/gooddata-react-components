@@ -33,10 +33,20 @@ const renderSupportedCharts = (config: IChartConfig = {}) => (
                 };
             }
 
+            if (type === VisualizationTypes.BAR) {
+                newConfig.xaxis = config.yaxis;
+                newConfig.yaxis = config.xaxis;
+                newConfig.secondary_xaxis = config.secondary_yaxis;
+                newConfig.dataLabels = {
+                    visible: false, // disable data label on bar chart to make test stable
+                };
+            }
+
             return wrap(
-                <div>
-                    <Visualization config={newConfig} {...barChartWith4MetricsAndViewBy2Attribute} />
-                </div>,
+                <Visualization config={newConfig} {...barChartWith4MetricsAndViewBy2Attribute} />,
+                600,
+                600,
+                type,
             );
         })}
     </div>

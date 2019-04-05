@@ -51,11 +51,11 @@ const renderSupportedCharts = (dataset: any, config?: IChartConfig, minmaxInfo =
                 };
             }
 
-            return wrap(
-                <div>
+            return (
+                <div key={type}>
                     <MinMaxInfo {...minmaxInfo} />
-                    <Visualization config={_config} {...dataset} />
-                </div>,
+                    {wrap(<Visualization config={_config} {...dataset} />)}
+                </div>
             );
         })}
     </div>

@@ -56,6 +56,11 @@ const BASE_TEMPLATE: any = {
             animation: false,
             enableMouseTracking: true, // !Status.exportMode,
             turboThreshold: DEFAULT_CATEGORIES_LIMIT,
+            dataLabels: {
+                style: {
+                    textOutline: "none",
+                },
+            },
             events: {
                 legendItemClick() {
                     if (this.visible) {
@@ -97,7 +102,9 @@ const BASE_TEMPLATE: any = {
 };
 
 function registerDrilldownHandler(configuration: any, chartOptions: any, drillConfig: any) {
-    set(configuration, "chart.events.drilldown", function chartDrilldownHandler(event: any) {
+    set(configuration, "chart.events.drilldown", function chartDrilldownHandler(
+        event: Highcharts.DrilldownEventObject,
+    ) {
         chartClick(drillConfig, event, this.container, chartOptions.type);
     });
 

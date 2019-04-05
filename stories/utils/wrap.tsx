@@ -6,9 +6,9 @@ export function wrap(
     component: any,
     height: number | string = 600,
     width: number | string = 600,
+    key?: any,
     minHeight?: number,
     minWidth?: number,
-    key?: any,
 ) {
     const keyProp: any = key ? { key } : {};
     const style = {

@@ -112,18 +112,13 @@ export interface IHighchartsCategoriesTree {
     tick: IHighchartsParentTick;
 }
 
-export interface IHighchartsPointObject extends Highcharts.PointObject {
+export interface IHighchartsPointObject extends Highcharts.Point {
     drillIntersection: IDrillEventIntersectionElement[];
     z?: number; // is missing in HCH's interface
     value?: number; // is missing in HCH's interface
 }
 
-export interface IHighchartsChartDrilldownEvent extends Highcharts.ChartDrilldownEvent {
-    point?: IHighchartsPointObject;
-    points?: IHighchartsPointObject[];
-}
-
-export function isGroupHighchartsDrillEvent(event: IHighchartsChartDrilldownEvent) {
+export function isGroupHighchartsDrillEvent(event: Highcharts.DrilldownEventObject) {
     return !!event.points;
 }
 

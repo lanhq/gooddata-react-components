@@ -11,6 +11,7 @@ import {
     ATTRIBUTE_3,
     MEASURE_1,
     MEASURE_2,
+    MEASURE_WITH_NULLS,
     ATTRIBUTE_1_WITH_ALIAS,
     ATTRIBUTE_COUNTRY,
     ATTRIBUTE_POPULARITY,
@@ -363,6 +364,21 @@ storiesOf("Core components/Heatmap", module)
                             },
                         ],
                     }}
+                />
+            </div>,
+        ),
+    )
+    .add("with null value", () =>
+        screenshotWrap(
+            <div style={wrapperStyle}>
+                <Heatmap
+                    projectId="storybook"
+                    measure={MEASURE_WITH_NULLS}
+                    rows={ATTRIBUTE_1}
+                    columns={ATTRIBUTE_2}
+                    onError={onErrorHandler}
+                    LoadingComponent={null}
+                    ErrorComponent={null}
                 />
             </div>,
         ),
