@@ -40,12 +40,13 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
     private geoPushpinElement: string;
 
     constructor(props: IVisConstruct) {
+        const { callbacks, element, visualizationProperties } = props;
         super(props);
         this.type = VisualizationTypes.PUSHPIN;
         this.supportedPropertiesList = [];
-        this.callbacks = props.callbacks;
-        this.geoPushpinElement = props.element;
-        this.initializeProperties(props.visualizationProperties);
+        this.callbacks = callbacks;
+        this.geoPushpinElement = element;
+        this.initializeProperties(visualizationProperties);
     }
 
     public getExtendedReferencePoint(referencePoint: IReferencePoint): Promise<IExtendedReferencePoint> {
@@ -117,9 +118,12 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
     ) {
         const { dataSource } = options;
         if (dataSource) {
-            const { dimensions, custom, locale, config } = options;
-            const { height } = dimensions;
-            const { drillableItems } = custom;
+            const {
+                dimensions: { height },
+                custom: { drillableItems },
+                locale,
+                config,
+            } = options;
             const {
                 afterRender,
                 onDrill,
