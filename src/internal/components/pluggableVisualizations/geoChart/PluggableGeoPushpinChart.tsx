@@ -149,14 +149,7 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
                 bucket => bucket.localIdentifier === BucketNames.SIZE,
             );
             const sorts: AFM.SortItem[] = hasMeasureSize
-                ? createSorts(
-                      this.type,
-                      dataSource.getAfm(),
-                      resultSpecWithDimensions,
-                      allProperties,
-                      false,
-                      false,
-                  )
+                ? createSorts(this.type, dataSource.getAfm(), resultSpecWithDimensions, allProperties)
                 : [];
             const resultSpecWithSorts = {
                 ...resultSpecWithDimensions,

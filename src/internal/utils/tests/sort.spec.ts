@@ -380,9 +380,7 @@ describe("createSorts", () => {
             ],
         };
         const expectedSort: AFM.SortItem[] = [SORTED_BY_M1];
-        expect(createSorts("pushpin", afm, resultSpec, emptyVisualizationProperties, false, false)).toEqual(
-            expectedSort,
-        );
+        expect(createSorts("pushpin", afm, resultSpec, emptyVisualizationProperties)).toEqual(expectedSort);
     });
 });
 
