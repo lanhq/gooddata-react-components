@@ -544,16 +544,24 @@ export const DEFAULT_XIRR_UICONFIG: IUiConfig = {
 };
 
 const geoMeasuresBase = {
-    ...measuresBase,
-    itemsLimit: DEFAULT_PUSHPIN_METRICS_COUNT,
+    accepts: [METRIC, FACT, ATTRIBUTE],
+    allowsDuplicateItems: true,
+    enabled: true,
     allowsReordering: false,
+    allowsSwapping: true,
+    itemsLimit: DEFAULT_PUSHPIN_METRICS_COUNT,
+    isShowInPercentEnabled: false,
     isShowInPercentVisible: false,
     canAddItems: true,
 };
 
 const geoAttributesBase = {
-    ...stackBase,
+    accepts: [ATTRIBUTE],
     itemsLimit: DEFAULT_GEO_ATTRIBUTES_COUNT,
+    allowsSwapping: true,
+    allowsReordering: false,
+    enabled: true,
+    isShowInPercentEnabled: false,
 };
 
 export const GEO_PUSHPIN_CHART_UICONFIG: IUiConfig = {

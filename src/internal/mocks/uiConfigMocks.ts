@@ -1206,7 +1206,7 @@ export const fullySpecifiedXirrUiConfig: IUiConfig = {
     supportedOverTimeComparisonTypes: [],
 };
 
-export const defaultGeoPushpinUiConfig = {
+export const defaultGeoPushpinUiConfig: IUiConfig = {
     buckets: {
         location: {
             accepts: ["attribute"],

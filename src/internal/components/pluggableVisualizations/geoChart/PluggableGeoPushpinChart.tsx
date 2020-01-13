@@ -33,15 +33,15 @@ import { VisualizationTypes } from "../../../../constants/visualizationTypes";
 
 import UnsupportedConfigurationPanel from "../../configurationPanels/UnsupportedConfigurationPanel";
 import { DASHBOARDS_ENVIRONMENT } from "../../../constants/properties";
-import { canSortStackTotalValue } from "../../../utils/mdObjectHelper";
 import { GeoChart } from "../../../../components/core/GeoChart";
 
 export class PluggableGeoPushpinChart extends PluggableBaseChart {
     private geoPushpinElement: string;
 
     constructor(props: IVisConstruct) {
-        const { callbacks, element, visualizationProperties } = props;
         super(props);
+
+        const { callbacks, element, visualizationProperties } = props;
         this.type = VisualizationTypes.PUSHPIN;
         this.supportedPropertiesList = [];
         this.callbacks = callbacks;
@@ -58,8 +58,8 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
 
         const buckets = get(clonedReferencePoint, BUCKETS, []);
         const locations = getBucketItemsByType(buckets, BucketNames.LOCATION, [ATTRIBUTE]);
-        const measuresSize = this.getMeasuresSizeBucketItem(buckets);
-        const measuresColor = this.getMeasuresColorBucketItem(buckets);
+        const measuresSize = this.getMeasureSizeBucketItem(buckets);
+        const measuresColor = this.getMeasureColorBucketItem(buckets);
         const segments = getPreferredBucketItems(
             buckets,
             [BucketNames.STACK, BucketNames.SEGMENT_BY],
@@ -144,15 +144,20 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
                 ...options.resultSpec,
                 dimensions: this.getDimensions(mdObject),
             };
-            const enableSortingByTotalGroup = this.featureFlags.enableSortingByTotalGroup as boolean;
-            const sorts: AFM.SortItem[] = createSorts(
-                this.type,
-                dataSource.getAfm(),
-                resultSpecWithDimensions,
-                allProperties,
-                canSortStackTotalValue(mdObject, null, enableSortingByTotalGroup),
-                enableSortingByTotalGroup,
+
+            const hasMeasureSize = mdObject.buckets.some(
+                bucket => bucket.localIdentifier === BucketNames.SIZE,
             );
+            const sorts: AFM.SortItem[] = hasMeasureSize
+                ? createSorts(
+                      this.type,
+                      dataSource.getAfm(),
+                      resultSpecWithDimensions,
+                      allProperties,
+                      false,
+                      false,
+                  )
+                : [];
             const resultSpecWithSorts = {
                 ...resultSpecWithDimensions,
                 sorts,
@@ -182,7 +187,7 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
         }
     }
 
-    private getMeasuresSizeBucketItem(buckets: IBucket[]): IBucketItem[] {
+    private getMeasureSizeBucketItem(buckets: IBucket[]): IBucketItem[] {
         if (hasBucket(buckets, BucketNames.MEASURES)) {
             return getBucketItemsByType(buckets, BucketNames.MEASURES, [METRIC]).slice(0, 1);
         }
@@ -190,7 +195,7 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
         return getBucketItemsByType(buckets, BucketNames.SIZE, [METRIC]);
     }
 
-    private getMeasuresColorBucketItem(buckets: IBucket[]): IBucketItem[] {
+    private getMeasureColorBucketItem(buckets: IBucket[]): IBucketItem[] {
         if (hasBucket(buckets, BucketNames.SECONDARY_MEASURES)) {
             return getBucketItemsByType(buckets, BucketNames.SECONDARY_MEASURES, [METRIC]).slice(0, 1);
         }
