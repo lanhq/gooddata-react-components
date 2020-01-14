@@ -117,67 +117,80 @@ export class PluggableGeoPushpinChart extends PluggableBaseChart {
         mdObject: VisualizationObject.IVisualizationObjectContent,
     ) {
         const { dataSource } = options;
-        if (dataSource) {
-            const {
-                dimensions: { height },
-                custom: { drillableItems },
-                locale,
-                config,
-            } = options;
-            const {
-                afterRender,
-                onDrill,
-                onFiredDrillEvent,
-                onError,
-                onExportReady,
-                onLoadingChanged,
-            } = this.callbacks;
-
-            // keep height undef for AD; causes indigo-visualizations to pick default 100%
-            const resultingHeight = this.environment === DASHBOARDS_ENVIRONMENT ? height : undefined;
-            const allProperties: IVisualizationProperties = get(
-                visualizationProperties,
-                "properties",
-                {},
-            ) as IVisualizationProperties;
-            const resultSpecWithDimensions: AFM.IResultSpec = {
-                ...options.resultSpec,
-                dimensions: this.getDimensions(mdObject),
-            };
-
-            const hasMeasureSize = mdObject.buckets.some(
-                bucket => bucket.localIdentifier === BucketNames.SIZE,
-            );
-            const sorts: AFM.SortItem[] = hasMeasureSize
-                ? createSorts(this.type, dataSource.getAfm(), resultSpecWithDimensions, allProperties)
-                : [];
-            const resultSpecWithSorts = {
-                ...resultSpecWithDimensions,
-                sorts,
-            };
-            const fullConfig = this.buildVisualizationConfig(mdObject, config, null);
-            const geoPushpinProps = {
-                projectId: this.projectId,
-                drillableItems,
-                onDrill,
-                onFiredDrillEvent,
-                config: fullConfig,
-                height: resultingHeight,
-                locale,
-                dataSource,
-                resultSpec: resultSpecWithSorts,
-                afterRender,
-                onLoadingChanged,
-                pushData: this.handlePushData,
-                onError,
-                onExportReady,
-                LoadingComponent: null as any,
-                ErrorComponent: null as any,
-                intl: this.intl,
-            };
-
-            render(<GeoChart {...geoPushpinProps} />, document.querySelector(this.geoPushpinElement));
+        if (!dataSource) {
+            return;
         }
+
+        const { projectId, intl, geoPushpinElement } = this;
+        const {
+            dimensions: { height },
+            custom: { drillableItems },
+            locale,
+            config,
+        } = options;
+        const {
+            afterRender,
+            onDrill,
+            onFiredDrillEvent,
+            onError,
+            onExportReady,
+            onLoadingChanged,
+        } = this.callbacks;
+
+        // keep height undef for AD; causes indigo-visualizations to pick default 100%
+        const resultingHeight = this.environment === DASHBOARDS_ENVIRONMENT ? height : undefined;
+
+        const resultSpec = this.getResultSpec(options, visualizationProperties, mdObject);
+
+        const fullConfig = this.buildVisualizationConfig(mdObject, config, null);
+        const geoPushpinProps = {
+            projectId,
+            drillableItems,
+            config: fullConfig,
+            height: resultingHeight,
+            intl,
+            locale,
+            dataSource,
+            resultSpec,
+            pushData: this.handlePushData,
+            afterRender,
+            onDrill,
+            onError,
+            onExportReady,
+            onLoadingChanged,
+            onFiredDrillEvent,
+            LoadingComponent: null as any,
+            ErrorComponent: null as any,
+        };
+
+        render(<GeoChart {...geoPushpinProps} />, document.querySelector(geoPushpinElement));
+    }
+
+    private getResultSpec(
+        options: IVisProps,
+        visualizationProperties: IVisualizationProperties,
+        mdObject: VisualizationObject.IVisualizationObjectContent,
+    ): AFM.IResultSpec {
+        const { resultSpec, dataSource } = options;
+
+        const resultSpecWithDimensions: AFM.IResultSpec = {
+            ...resultSpec,
+            dimensions: this.getDimensions(mdObject),
+        };
+
+        const hasSizeMeasure = mdObject.buckets.some(bucket => bucket.localIdentifier === BucketNames.SIZE);
+
+        const allProperties: IVisualizationProperties = get(visualizationProperties, "properties", {});
+
+        // only DESC sort on Size measure to always lay smaller pushpins on top of bigger ones
+        const sorts: AFM.SortItem[] = hasSizeMeasure
+            ? createSorts(this.type, dataSource.getAfm(), resultSpecWithDimensions, allProperties)
+            : [];
+
+        return {
+            ...resultSpecWithDimensions,
+            sorts,
+        };
     }
 
     private getMeasureSizeBucketItem(buckets: IBucket[]): IBucketItem[] {
