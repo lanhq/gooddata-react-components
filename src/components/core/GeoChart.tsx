@@ -17,8 +17,10 @@ import GeoChartRenderer, { IGeoChartRendererProps } from "./geoChart/GeoChartRen
 import { IDataSourceProviderInjectedProps } from "../afm/DataSourceProvider";
 import { DEFAULT_DATA_POINTS_LIMIT } from "../../constants/geoChart";
 import { IGeoConfig, IGeoData } from "../../interfaces/GeoChart";
-import { getGeoData, isDataOfReasonableSize } from "../../helpers/geoChart";
+import { getGeoData, isDataOfReasonableSize, getFormatFromExecutionResponse } from "../../helpers/geoChart";
 import { TOP } from "../visualizations/chart/legend/PositionTypes";
+import { IHeatmapLegendItem } from "../visualizations/typings/legend";
+import { calculateColorData } from "./geoChart/geoChartDataSource";
 
 export function renderChart(props: IGeoChartRendererProps): React.ReactElement {
     return <GeoChartRenderer {...props} />;
@@ -82,11 +84,19 @@ export class GeoChartInner extends BaseVisualization<IGeoChartInnerProps, {}> {
 
     private renderLegend = (): React.ReactElement => {
         const { config, execution, legendRenderer, locale, legendPostion: position } = this.props;
+        const { mdObject: { buckets = [] } = {} } = config;
+        const { executionResult, executionResponse } = execution;
+        const geoData: IGeoData = getGeoData(buckets, executionResponse.dimensions);
+        const { color } = geoData;
+        const colorData: IHeatmapLegendItem[] = calculateColorData(executionResult, geoData);
+        const colorFormat = getFormatFromExecutionResponse(color.index, executionResponse);
         const legendProps = {
             config,
             execution,
             locale,
             position,
+            colorData,
+            colorFormat,
         };
         return legendRenderer(legendProps);
     };

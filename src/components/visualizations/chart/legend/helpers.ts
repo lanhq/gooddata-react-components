@@ -1,4 +1,4 @@
-// (C) 2007-2019 GoodData Corporation
+// (C) 2007-2020 GoodData Corporation
 import range = require("lodash/range");
 import get = require("lodash/get");
 import head = require("lodash/head");
@@ -225,36 +225,37 @@ const LABEL_LENGHT_THRESHOLDS = [5, 8, 10, 15, 18];
 const SMALL_LABEL_LENGHT_THRESHOLDS = [4, 7, 9, 13, 15];
 
 function getHeatmapLegendLabelsConfiguration(legendLabels: string[], isSmall: boolean, isVertical: boolean) {
+    const numberOfLabels = legendLabels.length;
     const firstLabelLength = head(legendLabels).length;
     const lastLabelLength = last(legendLabels).length;
     const maxLabelLength = firstLabelLength > lastLabelLength ? firstLabelLength : lastLabelLength;
     const labelLengths = isSmall ? SMALL_LABEL_LENGHT_THRESHOLDS : LABEL_LENGHT_THRESHOLDS;
 
-    let shorteningLevel: number;
-    let shorteningConfig;
-
-    if (isVertical) {
-        shorteningConfig = verticalHeatmapConfig;
-    } else {
-        if (inRange(maxLabelLength, 0, labelLengths[0])) {
-            shorteningLevel = 5;
-        } else if (inRange(maxLabelLength, labelLengths[0], labelLengths[1])) {
-            shorteningLevel = 4;
-        } else if (inRange(maxLabelLength, labelLengths[1], labelLengths[2])) {
-            shorteningLevel = 3;
-        } else if (inRange(maxLabelLength, labelLengths[2], labelLengths[3])) {
-            shorteningLevel = 2;
-        } else if (inRange(maxLabelLength, labelLengths[3], labelLengths[4])) {
-            shorteningLevel = 1;
-        } else if (maxLabelLength > labelLengths[4]) {
-            shorteningLevel = 0;
-        }
-        shorteningConfig = isSmall
-            ? heatmapSmallLegendConfigMatrix[shorteningLevel]
-            : heatmapLegendConfigMatrix[shorteningLevel];
-    }
+    const shorteningConfig = isVertical
+        ? verticalHeatmapConfig
+        : getHorizonalShorteningLabelConfig(labelLengths, maxLabelLength, isSmall);
 
     return buildHeatmapLabelsConfig(legendLabels, shorteningConfig);
+}
+
+function getHorizonalShorteningLabelConfig(labelLengths: number[], maxLabelLength: number, isSmall: boolean) {
+    let shorteningLevel: number;
+    if (inRange(maxLabelLength, 0, labelLengths[0])) {
+        shorteningLevel = 5;
+    } else if (inRange(maxLabelLength, labelLengths[0], labelLengths[1])) {
+        shorteningLevel = 4;
+    } else if (inRange(maxLabelLength, labelLengths[1], labelLengths[2])) {
+        shorteningLevel = 3;
+    } else if (inRange(maxLabelLength, labelLengths[2], labelLengths[3])) {
+        shorteningLevel = 2;
+    } else if (inRange(maxLabelLength, labelLengths[3], labelLengths[4])) {
+        shorteningLevel = 1;
+    } else if (maxLabelLength > labelLengths[4]) {
+        shorteningLevel = 0;
+    }
+    return isSmall
+        ? heatmapSmallLegendConfigMatrix[shorteningLevel]
+        : heatmapLegendConfigMatrix[shorteningLevel];
 }
 
 export function calculateFluidLegend(seriesCount: number, containerWidth: number) {
@@ -317,7 +318,7 @@ function getHeatmapLegendLabels(series: IHeatmapLegendItem[], format: string, nu
     const diff = max - min;
 
     return range(series.length + 1).map(index => {
-        let value;
+        let value: number;
 
         if (index === 0) {
             value = get(series, "0.range.from", 0);

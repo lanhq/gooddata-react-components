@@ -1,4 +1,5 @@
 // (C) 2019-2020 GoodData Corporation
+import without = require("lodash/without");
 import { Execution } from "@gooddata/typings";
 import { IGeoData, IPushpinColor } from "../../../interfaces/GeoChart";
 import {
@@ -9,7 +10,10 @@ import {
 import { getGeoAttributeHeaderItems } from "../../../helpers/geoChart";
 import { getHeaderItemName, isTwoDimensionsData } from "../../../helpers/executionResultHelper";
 import { stringToFloat } from "../../../helpers/utils";
-import { getPushpinColors } from "./geoChartColor";
+import { getPushpinColors, getColorPalette } from "./geoChartColor";
+import { DEFAULT_COLORS } from "../../visualizations/utils/color";
+import range = require("lodash/range");
+import { IHeatmapLegendItem } from "../../visualizations/typings/legend";
 
 type IGeoDataSourceFeature = GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>;
 export type IGeoDataSourceFeatures = IGeoDataSourceFeature[];
@@ -138,4 +142,44 @@ export const createPushpinDataSource = (
         };
     }
     return source;
+};
+
+export const calculateColorData = (
+    executionResult: Execution.IExecutionResult,
+    geoData: IGeoData,
+): IHeatmapLegendItem[] => {
+    const colorPalette = getColorPalette(DEFAULT_COLORS[0]);
+    const {
+        color: { index: colorIndex },
+    } = geoData;
+    const colorSeries = getColorSeries(executionResult, colorIndex);
+    const values: number[] = without(colorSeries, null, undefined, NaN);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const offset = (max - min) / 6;
+
+    return range(0, 6).map(
+        (index: number): IHeatmapLegendItem => {
+            const from = min + offset * index;
+            const range = {
+                from,
+                to: from + offset,
+            };
+            return {
+                range,
+                color: colorPalette[index],
+                isVisible: true,
+                legendIndex: 0,
+            };
+        },
+    );
+};
+
+const getColorSeries = (executionResult: Execution.IExecutionResult, colorIndex: number): number[] => {
+    let colorData: Execution.DataValue[] = [];
+    const { data } = executionResult;
+    if (isTwoDimensionsData(data)) {
+        colorData = colorIndex ? data[colorIndex] : [];
+    }
+    return colorData.map(stringToFloat);
 };

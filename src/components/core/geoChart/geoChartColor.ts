@@ -28,7 +28,7 @@ function getCalculatedColors(count: number, channels: number[], steps: number[])
 }
 
 // copy from class HeatmapColorStrategy
-function getColorPalette(baseColor: string): string[] {
+export function getColorPalette(baseColor: string): string[] {
     const { R: r, G: g, B: b } = parseRGBColorCode(baseColor);
     const channels = [r, g, b];
     const steps = channels.map(channel => (255 - channel) / DEFAULT_PUSHPIN_COLOR_SCALE);

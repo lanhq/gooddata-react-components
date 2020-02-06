@@ -7,7 +7,12 @@ import {
     getAttributeHeadersInDimension,
     getMeasureGroupHeaderItemsInDimension,
 } from "./executionResultHelper";
+import { IColorStrategy } from "../components/visualizations/chart/colorFactory";
+import { isEmpty, without } from "lodash";
 
+const NUMBER_PRECISION = 15;
+const DEFAULT_COLOR_INDEX = 1;
+const DEFAULT_COLOR_COUNT = 6;
 export function getGeoData(
     buckets: VisualizationObject.IBucket[],
     dimensions: Execution.IResultDimension[],
@@ -121,4 +126,42 @@ export function getFormatFromExecutionResponse(
         result,
         `dimensions[0].headers[0].measureGroupHeader.items[${indexMeasure}].measureHeaderItem.format`,
     );
+}
+
+export function getColorAxisData(
+    seriesData: number[] = [],
+    colorStrategy: IColorStrategy,
+): Highcharts.ColorAxisDataClassesOptions[] {
+    const values: number[] = without(seriesData.map((item: any) => item.value), null, undefined, NaN);
+
+    if (isEmpty(values)) {
+        return [];
+    }
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const safeMin = parseFloat(Number(min).toPrecision(NUMBER_PRECISION));
+    const safeMax = parseFloat(Number(max).toPrecision(NUMBER_PRECISION));
+    const colorAxisData = [];
+
+    if (min === max) {
+        colorAxisData.push({
+            from: min,
+            to: max,
+            color: colorStrategy.getColorByIndex(DEFAULT_COLOR_INDEX),
+        });
+    } else {
+        const step = (safeMax - safeMin) / DEFAULT_COLOR_COUNT;
+        let currentSum = safeMin;
+        for (let i = 0; i < DEFAULT_COLOR_COUNT; i += 1) {
+            colorAxisData.push({
+                from: currentSum,
+                to: i === DEFAULT_COLOR_COUNT - 1 ? safeMax : currentSum + step,
+                color: colorStrategy.getColorByIndex(i),
+            });
+            currentSum += step;
+        }
+    }
+
+    return colorAxisData;
 }
